@@ -1,0 +1,88 @@
+---
+import PostCard from './PostCard.astro';
+import PostListItem from './PostListItem.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+	posts: (CollectionEntry<'tech'> | CollectionEntry<'life'>)[];
+}
+
+const { posts } = Astro.props;
+---
+
+<div class="post-view-container">
+    <div class="flex justify-end mb-6">
+        <div class="flex p-1 rounded-lg" style="background-color: var(--bg-hover)">
+             <button id="view-list" class="view-toggle-btn p-1.5 rounded-md transition-all hover:opacity-100" style="color: var(--text-muted)" aria-label="List View">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <button id="view-card" class="view-toggle-btn p-1.5 rounded-md transition-all hover:opacity-100" style="color: var(--text-muted)" aria-label="Card View">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    {posts.length > 0 ? (
+        <>
+            <div id="list-view" class="view-content flex flex-col">
+                {posts.map((post) => (
+                    <PostListItem post={post} />
+                ))}
+            </div>
+
+            <div id="card-view" class="view-content grid gap-6 sm:grid-cols-2 lg:grid-cols-3 hidden">
+                {posts.map((post) => (
+                    <PostCard post={post} />
+                ))}
+            </div>
+        </>
+    ) : (
+        <div class="flex flex-col items-center justify-center py-20 text-center">
+            <div class="text-6xl mb-4">📭</div>
+            <h3 class="text-xl font-bold mb-2" style="color: var(--text-main)">No posts found</h3>
+            <p style="color: var(--text-muted)">
+                There are no posts to display at the moment.
+            </p>
+        </div>
+    )}
+</div>
+
+<script>
+    const listBtn = document.getElementById('view-list');
+    const cardBtn = document.getElementById('view-card');
+    const listView = document.getElementById('list-view');
+    const cardView = document.getElementById('card-view');
+    
+    const activeClass = ['view-toggle-active'];
+
+    function setView(mode: 'list' | 'card') {
+        localStorage.setItem('blog-view-mode', mode);
+        
+        if (mode === 'list') {
+            listView?.classList.remove('hidden');
+            cardView?.classList.add('hidden');
+            
+            listBtn?.classList.add(...activeClass);
+            cardBtn?.classList.remove(...activeClass);
+        } else {
+            listView?.classList.add('hidden');
+            cardView?.classList.remove('hidden');
+
+            cardBtn?.classList.add(...activeClass);
+            listBtn?.classList.remove(...activeClass);
+        }
+    }
+
+    // Initialize
+    const savedMode = localStorage.getItem('blog-view-mode') || 'list';
+    setView(savedMode as 'list' | 'card');
+
+    listBtn?.addEventListener('click', () => setView('list'));
+    cardBtn?.addEventListener('click', () => setView('card'));
+    
+    // View Transitions/Persist on navigation (astro view transitions optional, but script runs on page load)
+</script>

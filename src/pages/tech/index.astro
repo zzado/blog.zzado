@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostView from '../../components/PostView.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('tech')).filter(p => p.slug.startsWith('ko/')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<BaseLayout title="기술 (Tech)">
+    	<div class="mb-8">
+		<h1 class="text-3xl font-bold" style="color: var(--text-main)">Tech</h1>
+		<p class="mt-2" style="color: var(--text-muted)">
+			개발 이야기와 기술적인 고민들
+		</p>
+	</div>
+	<PostView posts={posts} />
+</BaseLayout>

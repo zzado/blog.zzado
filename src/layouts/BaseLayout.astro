@@ -1,0 +1,49 @@
+---
+import Header from '../components/Header.astro';
+import '../styles/global.css';
+import { SITE_TITLE } from '../consts';
+
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = 'A personal blog.' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/png" href="/fire.png" />
+		<meta name="generator" content={Astro.generator} />
+        <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={Astro.url} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={new URL('/og-image.jpg', Astro.url)} />
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={Astro.url} />
+        <meta property="twitter:title" content={title} />
+        <meta property="twitter:description" content={description} />
+        <meta property="twitter:image" content={new URL('/og-image.jpg', Astro.url)} />
+
+		<title>{title === SITE_TITLE ? title : `${SITE_TITLE} - ${title}`}</title>
+	</head>
+	<body class="flex min-h-screen flex-col antialiased transition-colors duration-300">
+		<Header />
+		<main class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+			<slot />
+		</main>
+        <footer class="border-t py-6 text-center text-sm" style="border-color: var(--border-main); color: var(--text-muted)">
+            &copy; {new Date().getFullYear()} zzado. All rights reserved.
+        </footer>
+	</body>
+</html>

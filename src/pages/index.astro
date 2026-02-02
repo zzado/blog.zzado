@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostView from '../components/PostView.astro';
+import { getCollection } from 'astro:content';
+import { SITE_TITLE } from '../consts';
+
+const techPosts = (await getCollection('tech')).filter(p => p.slug.startsWith('ko/'));
+const lifePosts = (await getCollection('life')).filter(p => p.slug.startsWith('ko/'));
+
+const allPosts = [...techPosts, ...lifePosts].sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<BaseLayout title={SITE_TITLE}>
+	<PostView posts={allPosts} />
+</BaseLayout>

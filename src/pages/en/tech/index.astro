@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostView from '../../../components/PostView.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('tech')).filter(p => p.slug.startsWith('en/')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<BaseLayout title="Tech">
+    	<div class="mb-8">
+		<h1 class="text-3xl font-bold" style="color: var(--text-main)">Tech</h1>
+		<p class="mt-2" style="color: var(--text-muted)">
+			Development stories and technical insights
+		</p>
+	</div>
+	<PostView posts={posts} />
+</BaseLayout>

@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostView from '../../../components/PostView.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('life')).filter(p => p.slug.startsWith('en/')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<BaseLayout title="Life">
+    	<div class="mb-8">
+		<h1 class="text-3xl font-bold" style="color: var(--text-main)">Life</h1>
+		<p class="mt-2" style="color: var(--text-muted)">
+			Stories and moments from daily life
+		</p>
+	</div>
+	<PostView posts={posts} />
+</BaseLayout>

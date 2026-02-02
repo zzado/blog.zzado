@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostView from '../../components/PostView.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+    const techPosts = await getCollection('tech');
+    const lifePosts = await getCollection('life');
+	const allPosts = [...techPosts, ...lifePosts];
+
+	const uniqueTags = [...new Set(allPosts.map((post) => post.data.tags).flat())];
+
+	return uniqueTags.map((tag) => {
+		const filteredPosts = allPosts.filter((post) => post.data.tags.includes(tag));
+		return {
+			params: { tag },
+			props: { posts: filteredPosts },
+		};
+	});
+}
+
+const { tag } = Astro.params;
+const { posts } = Astro.props;
+---
+
+<BaseLayout title={`Posts tagged with #${tag}`}>
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold" style="color: var(--text-main)">
+            #{tag} ({posts.length})
+        </h1>
+        <p class="mt-2" style="color: var(--text-muted)">
+            Posts tagged with {tag}
+        </p>
+        <a href="/" class="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 mt-2 inline-block">&larr; Back to all posts</a>
+    </div>
+	<PostView posts={posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())} />
+</BaseLayout>
+```

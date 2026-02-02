@@ -1,0 +1,163 @@
+---
+---
+
+<div id="search-modal" class="fixed inset-0 z-50 hidden bg-gray-900/50 backdrop-blur-sm transition-opacity opacity-0" aria-hidden="true">
+    <div class="fixed inset-x-0 top-0 mx-auto mt-20 max-w-2xl transform overflow-hidden rounded-xl bg-white dark:bg-gray-800 p-2 shadow-2xl transition-all scale-95 opacity-0" id="search-panel">
+        
+        <!-- Search Input -->
+        <div class="relative flex items-center border-b border-gray-200 dark:border-gray-700 px-4 pb-2 pt-2">
+            <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+            <input 
+                type="text" 
+                id="search-input"
+                class="h-12 w-full border-0 bg-transparent pl-4 pr-4 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm dark:text-white"
+                placeholder="Search posts..."
+                role="combobox"
+                aria-expanded="false"
+                aria-controls="search-results"
+            />
+        </div>
+
+        <!-- Results List -->
+        <ul id="search-results" class="max-h-[60vh] overflow-y-auto scroll-py-2 py-2 text-sm text-gray-800 dark:text-gray-200" role="listbox">
+            <li id="initial-message" class="p-4 text-center text-gray-500 dark:text-gray-400">
+                Type to start searching...
+            </li>
+             <li id="no-results" class="hidden p-4 text-center text-gray-500 dark:text-gray-400">
+                No results found.
+            </li>
+        </ul>
+        
+        <div class="border-t border-gray-100 bg-gray-50 px-4 py-2 text-xs text-gray-500 dark:border-gray-700 dark:bg-gray-800/50">
+             Press <kbd class="font-bold">Enter</kbd> to select, <kbd class="font-bold">Esc</kbd> to close
+        </div>
+    </div>
+</div>
+
+<script>
+    import Fuse from 'fuse.js';
+
+    let posts = [];
+    let fuse = null;
+    const modal = document.getElementById('search-modal');
+    const panel = document.getElementById('search-panel');
+    const input = document.getElementById('search-input');
+    const resultsList = document.getElementById('search-results');
+    const initialMessage = document.getElementById('initial-message');
+    const noResults = document.getElementById('no-results');
+
+    async function fetchPosts() {
+        if (posts.length > 0) return;
+        try {
+            const res = await fetch('/search.json');
+            const allPosts = await res.json();
+            
+            // Filter by current language
+            const currentPath = window.location.pathname;
+            const isEnglish = currentPath.startsWith('/en');
+            const currentLang = isEnglish ? 'en' : 'ko';
+            
+            posts = allPosts.filter(post => post.lang === currentLang);
+            
+            fuse = new Fuse(posts, {
+                keys: ['title', 'description', 'tags'],
+                includeScore: true,
+                threshold: 0.4,
+            });
+        } catch (e) {
+            console.error('Failed to fetch search index', e);
+        }
+    }
+
+    function openSearch() {
+        fetchPosts(); // Lazy load
+        modal?.classList.remove('hidden');
+        // Simple animation
+        requestAnimationFrame(() => {
+            modal?.classList.remove('opacity-0');
+            panel?.classList.remove('scale-95', 'opacity-0');
+        });
+        setTimeout(() => input?.focus(), 50);
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSearch() {
+        modal?.classList.add('opacity-0');
+        panel?.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal?.classList.add('hidden');
+        }, 200);
+        document.body.style.overflow = '';
+        if(input) input.value = '';
+        if(resultsList) resultsList.innerHTML = '';
+        if(initialMessage) resultsList?.appendChild(initialMessage);
+    }
+
+    // Expose open function globally or listen for event
+    window.addEventListener('open-search', openSearch);
+    
+    // Close on click outside
+    modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeSearch();
+    });
+
+    // Keydown handling
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            openSearch();
+        }
+        if (e.key === 'Escape' && !modal?.classList.contains('hidden')) {
+            closeSearch();
+        }
+    });
+
+    // Search logic
+    input?.addEventListener('input', (e) => {
+        const query = (e.target as HTMLInputElement).value;
+        if (!fuse) return;
+        
+        resultsList.innerHTML = ''; // clear
+
+        if (query.trim() === '') {
+             if(initialMessage) resultsList.appendChild(initialMessage);
+             return;
+        }
+
+        const results = fuse.search(query);
+
+        if (results.length === 0) {
+            if(noResults) {
+                noResults.classList.remove('hidden');
+                resultsList.appendChild(noResults);
+            } 
+            return;
+        }
+
+        if(noResults) noResults.classList.add('hidden');
+
+        results.forEach((result) => {
+            const post = result.item;
+            const li = document.createElement('li');
+            li.className = 'group flex cursor-pointer select-none items-center rounded-md p-3 hover:bg-gray-100 dark:hover:bg-gray-700 mx-2';
+            li.setAttribute('role', 'option');
+            li.innerHTML = `
+                <a href="${post.url}" class="flex flex-1 flex-col">
+                    <div class="flex justify-between">
+                         <span class="font-medium text-gray-900 dark:text-white">${post.title}</span>
+                         <span class="ml-2 bg-gray-100 dark:bg-gray-700 text-xs px-2 py-0.5 rounded-full text-gray-500">
+                            ${post.lang === 'en' 
+                                ? (post.collection === 'tech' ? 'Tech' : 'Life') 
+                                : (post.collection === 'tech' ? '기술' : '일상')
+                            }
+                         </span>
+                    </div>
+                    <p class="text-xs text-gray-500 line-clamp-1 mt-1">${post.description}</p>
+                </a>
+            `;
+            resultsList.appendChild(li);
+        });
+    });
+</script>

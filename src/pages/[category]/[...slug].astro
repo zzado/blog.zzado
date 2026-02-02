@@ -1,0 +1,64 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+    const techPosts = await getCollection('tech');
+    const lifePosts = await getCollection('life');
+    
+    // Filter only Korean posts (those in 'ko/' subdirectory)
+    const techPaths = techPosts
+        .filter(post => post.slug.startsWith('ko/'))
+        .map((post) => ({
+            params: { category: 'tech', slug: post.slug.replace(/^ko\//, '') },
+            props: { post },
+        }));
+
+    const lifePaths = lifePosts
+        .filter(post => post.slug.startsWith('ko/'))
+        .map((post) => ({
+            params: { category: 'life', slug: post.slug.replace(/^ko\//, '') },
+            props: { post },
+        }));
+
+	return [...techPaths, ...lifePaths];
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+    <article class="prose prose-lg mx-auto dark:prose-invert">
+        <div class="mb-8 border-b border-gray-200 pb-8 dark:border-gray-800">
+            <div class="mb-4">
+                 <a href={`/${post.collection}`} class="text-sm font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400 hover:underline">
+                    {post.collection === 'tech' ? '기술' : '일상'}
+                </a>
+            </div>
+            <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4" style="color: var(--text-main)">
+                {post.data.title}
+            </h1>
+            <div class="flex items-center text-gray-500 dark:text-gray-400">
+                <time datetime={post.data.pubDate.toISOString()}>
+                    {post.data.pubDate.toLocaleDateString('en-us', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                    })}
+                </time>
+            </div>
+            {post.data.tags && (
+                <div class="mt-4 flex gap-2">
+                    {post.data.tags.map((tag) => (
+                        <a href={`/tags/${tag}`} class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-200 dark:text-indigo-900 transition-colors hover:bg-indigo-200 dark:hover:bg-indigo-300">
+                            #{tag}
+                        </a>
+                    ))}
+                </div>
+            )}
+        </div>
+        
+        <Content />
+    </article>
+</BaseLayout>

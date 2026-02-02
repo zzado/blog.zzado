@@ -1,0 +1,64 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+	post: CollectionEntry<'tech'> | CollectionEntry<'life'>;
+}
+
+const { post } = Astro.props;
+
+const formattedDate = post.data.pubDate.toLocaleDateString('en-us', {
+	year: 'numeric',
+	month: 'short',
+	day: 'numeric',
+});
+
+const isEnglish = post.slug.startsWith('en/');
+const slugClean = post.slug.replace(/^(ko|en)\//, '');
+const postUrl = isEnglish 
+    ? `/en/${post.collection}/${slugClean}/` 
+    : `/${post.collection}/${slugClean}/`;
+const categoryUrl = isEnglish
+    ? `/en/${post.collection}`
+    : `/${post.collection}`;
+---
+
+<article class="flex flex-col sm:flex-row gap-6 border-b py-8 first:pt-0 last:border-0 hover:bg-black/5 dark:hover:bg-white/5 transition-colors p-4 -mx-4 rounded-lg" style="border-color: var(--border-main)">
+    <a href={postUrl} class="block w-full sm:w-64 h-40 shrink-0 overflow-hidden rounded-md" style="background-color: var(--bg-hover)">
+        {post.data.heroImage ? (
+            <img src={post.data.heroImage} alt="" class="h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
+        ) : (
+            <div class="flex h-full w-full items-center justify-center" style="color: var(--text-muted)">
+                <span class="text-4xl opacity-50">📝</span>
+            </div>
+        )}
+    </a>
+    
+    <div class="flex flex-1 flex-col justify-center">
+        <div class="mb-2">      
+             <a href={categoryUrl} class="text-xs font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400 hover:underline">
+                    {post.collection === 'tech' ? '기술' : '일상'}
+            </a>
+        </div>
+        <a href={postUrl}>
+		    <h2 class="mb-2 text-2xl font-bold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" style="color: var(--text-main)">
+			    {post.data.title}
+		    </h2>
+        </a>
+		<p class="mb-4 line-clamp-2 leading-relaxed opacity-80" style="color: var(--text-main)">
+			{post.data.description}
+		</p>
+		<div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-500">
+			<time datetime={post.data.pubDate.toISOString()}>
+				{formattedDate}
+			</time>
+            {post.data.tags && (
+                <div class="flex gap-2">
+                    {post.data.tags.slice(0, 3).map(tag => (
+                       <span class="text-gray-400 dark:text-gray-600">#{tag}</span>
+                    ))}
+                </div>
+            )}
+		</div>
+	</div>
+</article>
