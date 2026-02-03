@@ -25,40 +25,94 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await post.render();
+const { Content, headings } = await post.render();
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-    <article class="prose prose-lg mx-auto dark:prose-invert">
-        <div class="mb-8 border-b border-gray-200 pb-8 dark:border-gray-800">
-            <div class="mb-4">
-                 <a href={`/${post.collection}`} class="text-sm font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400 hover:underline">
-                    {post.collection === 'tech' ? '기술' : '일상'}
-                </a>
-            </div>
-            <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4" style="color: var(--text-main)">
-                {post.data.title}
-            </h1>
-            <div class="flex items-center text-gray-500 dark:text-gray-400">
-                <time datetime={post.data.pubDate.toISOString()}>
-                    {post.data.pubDate.toLocaleDateString('en-us', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                    })}
-                </time>
-            </div>
-            {post.data.tags && (
-                <div class="mt-4 flex gap-2">
-                    {post.data.tags.map((tag) => (
-                        <a href={`/tags/${tag}`} class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-200 dark:text-indigo-900 transition-colors hover:bg-indigo-200 dark:hover:bg-indigo-300">
-                            #{tag}
-                        </a>
-                    ))}
+    <div class="relative lg:flex lg:gap-10 lg:items-start">
+        <article class="prose prose-lg dark:prose-invert min-w-0 flex-1 mx-auto lg:mx-0">
+            <div class="mb-8 border-b border-gray-200 pb-8 dark:border-gray-800">
+                <div class="mb-4">
+                     <a href={`/${post.collection}`} class="text-sm font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400 hover:underline">
+                        {post.collection === 'tech' ? '기술' : '일상'}
+                    </a>
                 </div>
-            )}
-        </div>
-        
-        <Content />
-    </article>
+                <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4" style="color: var(--text-main)">
+                    {post.data.title}
+                </h1>
+                <div class="flex items-center text-gray-500 dark:text-gray-400">
+                    <time datetime={post.data.pubDate.toISOString()}>
+                        {post.data.pubDate.toLocaleDateString('en-us', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                        })}
+                    </time>
+                </div>
+                {post.data.tags && (
+                    <div class="mt-4 flex gap-2">
+                        {post.data.tags.map((tag) => (
+                            <a href={`/tags/${tag}`} class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-200 dark:text-indigo-900 transition-colors hover:bg-indigo-200 dark:hover:bg-indigo-300">
+                                #{tag}
+                            </a>
+                        ))}
+                    </div>
+                )}
+            </div>
+            
+            <Content />
+        </article>
+
+        <!-- Table of Contents Sidebar -->
+        <aside class="hidden lg:block w-64 shrink-0 sticky top-24 order-2">
+            <div class="border-l pl-4" style="border-color: var(--border-main)">
+                <h2 class="text-sm font-bold uppercase tracking-wider mb-4" style="color: var(--text-muted)">
+                    On this page
+                </h2>
+                <nav>
+                    <ul class="space-y-3 text-sm">
+                        {headings.map((heading) => (
+                            <li class={`pl-${Math.max(0, heading.depth - 2) * 4}`}>
+                                <a 
+                                    href={`#${heading.slug}`} 
+                                    class="toc-link block hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors line-clamp-1"
+                                    style="color: var(--text-muted)"
+                                >
+                                    {heading.text}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // TOC Highlighter
+        document.addEventListener('astro:page-load', () => {
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    const id = entry.target.getAttribute('id');
+                    const tocLink = document.querySelector(`.toc-link[href="#${id}"]`);
+                    
+                    if (entry.intersectionRatio > 0) {
+                        document.querySelectorAll('.toc-link').forEach(link => {
+                            link.classList.remove('font-bold', 'text-indigo-600', 'dark:text-indigo-400');
+                            link.style.color = 'var(--text-muted)';
+                        });
+                        
+                        if (tocLink) {
+                            tocLink.classList.add('font-bold', 'text-indigo-600', 'dark:text-indigo-400');
+                            (tocLink as HTMLElement).style.color = ''; // Remove inline style override
+                        }
+                    }
+                });
+            }, { rootMargin: '-100px 0px -66% 0px' }); // Highlight when heading is in top 1/3 of screen
+
+            document.querySelectorAll('article h2, article h3, article h4').forEach(heading => {
+                observer.observe(heading);
+            });
+        });
+    </script>
 </BaseLayout>
