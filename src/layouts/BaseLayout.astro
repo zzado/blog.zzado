@@ -2,6 +2,7 @@
 import Header from '../components/Header.astro';
 import '../styles/global.css';
 import { SITE_TITLE } from '../consts';
+import { ClientRouter } from 'astro:transitions';
 
 interface Props {
 	title: string;
@@ -20,6 +21,7 @@ const { title, description = 'A personal blog.' } = Astro.props;
 		<link rel="icon" type="image/png" href="/fire.png" />
 		<meta name="generator" content={Astro.generator} />
         <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+        <ClientRouter />
 
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website" />
@@ -36,14 +38,112 @@ const { title, description = 'A personal blog.' } = Astro.props;
         <meta property="twitter:image" content={new URL('/og-image.jpg', Astro.url)} />
 
 		<title>{title === SITE_TITLE ? title : `${SITE_TITLE} - ${title}`}</title>
+
+        <style is:global>
+            /* Scroll Progress Bar */
+            #scroll-progress-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 3px;
+                background: transparent;
+                z-index: 1000;
+                pointer-events: none;
+            }
+            #scroll-progress-bar {
+                width: 0%;
+                height: 100%;
+                background: linear-gradient(90deg, #6366f1, #d946ef);
+                transition: width 0.1s ease-out;
+            }
+            
+            /* Copy Code Button */
+            pre {
+                position: relative;
+            }
+            .copy-code-btn {
+                position: absolute;
+                top: 0.5rem;
+                right: 0.5rem;
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+                font-weight: 500;
+                line-height: 1rem;
+                color: #e5e7eb;
+                background-color: rgba(31, 41, 55, 0.6);
+                border-radius: 0.375rem;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(4px);
+                cursor: pointer;
+                opacity: 0;
+                transition: all 0.2s;
+            }
+            pre:hover .copy-code-btn {
+                opacity: 1;
+            }
+            .copy-code-btn:hover {
+                background-color: rgba(31, 41, 55, 0.9);
+                transform: scale(1.05);
+            }
+        </style>
 	</head>
 	<body class="flex min-h-screen flex-col antialiased transition-colors duration-300">
+        <div id="scroll-progress-container">
+            <div id="scroll-progress-bar"></div>
+        </div>
+
 		<Header />
-		<main class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+		<main class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8" transition:animate="fade">
 			<slot />
 		</main>
         <footer class="border-t py-6 text-center text-sm" style="border-color: var(--border-main); color: var(--text-muted)">
             &copy; {new Date().getFullYear()} zzado. All rights reserved.
         </footer>
+
+        <script>
+            document.addEventListener('astro:page-load', () => {
+                // 1. Scroll Progress
+                const progressBar = document.getElementById('scroll-progress-bar');
+                const updateProgress = () => {
+                    if (!progressBar) return;
+                    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                    const scrolled = (height > 0) ? (scrollTop / height) * 100 : 0;
+                    progressBar.style.width = scrolled + '%';
+                };
+                
+                window.addEventListener('scroll', updateProgress, { passive: true });
+                updateProgress();
+
+                // 2. Copy Code Button
+                document.querySelectorAll('pre').forEach((pre) => {
+                    if (pre.querySelector('.copy-code-btn')) return;
+
+                    const button = document.createElement('button');
+                    button.className = 'copy-code-btn';
+                    button.textContent = 'Copy';
+                    button.type = 'button';
+                    
+                    button.addEventListener('click', async () => {
+                        const code = pre.querySelector('code')?.innerText || pre.innerText;
+                        try {
+                            await navigator.clipboard.writeText(code);
+                            const originalText = button.textContent;
+                            button.textContent = 'Copied!';
+                            button.classList.add('text-green-400');
+                            setTimeout(() => {
+                                button.textContent = originalText;
+                                button.classList.remove('text-green-400');
+                            }, 2000);
+                        } catch (err) {
+                            console.error('Failed to copy', err);
+                        }
+                    });
+
+                    pre.appendChild(button);
+                });
+            });
+        </script>
 	</body>
 </html>
