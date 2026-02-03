@@ -6,20 +6,24 @@ tags: ['openclaw', 'ai', 'agent', 'discord', 'tutorial']
 heroImage: ''
 ---
 
-## OpenClaw와 함께하는 AI 에이전트 라이프 시작하기
-
-### [ 나만의 AI 비서, OpenClaw를 소개합니다 ]
-
-#### 1. OpenClaw가 뭔가요?
+## 1. 배경 (Why?)
 **OpenClaw**는 사용자의 로컬 환경에서 동작하는 **오픈소스 AI 에이전트**입니다.
-단순히 채팅만 하는 것이 아니라, 내 컴퓨터의 터미널을 제어하고, 파일을 관리하고, 브라우저를 조작하며 실제 "일"을 해주는 녀석이죠.
+단순히 채팅만 하는 챗봇이 아니라, 내 컴퓨터의 **터미널을 제어하고, 파일을 관리하고, 브라우저를 조작하며 실제 "일"을 해주는** 녀석이죠.
 
-오늘은 이 멋진 친구를 내 컴퓨터에 설치하고, **Discord**를 통해 언제 어디서든 대화할 수 있도록 연결하는 과정을 기록해 보려고 합니다.
+저는 이 멋진 친구를 내 컴퓨터(Mac mini)에 설치하여, 언제 어디서든(심지어 침대에 누워서 폰으로도!) 내 서버를 관리할 수 있는 **나만의 AI 비서**를 만들고 싶었습니다.
 
-#### 2. OpenClaw 설치하기 (Mac 기준)
-설치 과정은 생각보다 매우 간단합니다. **Homebrew**를 사용하면 명령어 한 줄로 끝납니다.
+## 2. 사전 준비 (Prerequisites)
+OpenClaw가 내 말을 들으려면 소통 창구가 필요합니다. 가장 접근성이 좋은 **Discord**를 활용하기로 했습니다.
 
-터미널을 열고 아래 명령어를 입력해 주세요.
+1.  **Discord Developer Portal** 접속 및 로그인
+2.  `New Application` 생성 (이름: **Claw**)
+3.  `Bot` 메뉴에서 봇 생성 및 **Token 복사** (이게 연결 열쇠입니다! 🔑)
+4.  **중요!** `Privileged Gateway Intents`에서 **`Message Content Intent` 활성화** (이걸 켜야 봇이 내 말을 읽을 수 있어요)
+
+## 3. 설치 및 연결 (Solution) 🚀
+
+### 3.1 OpenClaw 설치 (Mac)
+설치 과정은 매우 간단합니다. **Homebrew**를 이용하면 한 줄로 끝납니다.
 
 ```bash
 brew install openclaw/tap/openclaw
@@ -27,51 +31,30 @@ brew install openclaw/tap/openclaw
 
 ![OpenClaw Terminal Install](/images/openclaw-install/terminal-install.jpg)
 
-설치가 완료되었다면, 버전 확인을 통해 잘 설치되었는지 체크해 봅시다.
-
-```bash
-openclaw --version
-```
-
-버전 정보가 뜬다면 설치 성공! 🎉
-
-#### 3. Discord 봇 만들기
-OpenClaw가 내 말을 들으려면 귀(채널)가 필요하겠죠? Discord 봇을 생성해서 그 역할을 맡겨봅시다.
-
-1.  **Discord Developer Portal**에 접속합니다.
-2.  `New Application`을 눌러 앱을 생성합니다. (이름은 원하는 대로! 저는 'Claw'라고 지었어요.)
-3.  좌측 메뉴에서 `Bot`을 선택하고 `Add Bot`을 클릭합니다.
-4.  **중요!** `Reset Token`을 눌러 **토큰(Token)**을 복사해 둡니다. (이게 바로 OpenClaw와 디스코드를 연결하는 열쇠입니다.)
-5.  `Privileged Gateway Intents` 항목에서 `Message Content Intent`를 **활성화(ON)** 해줍니다. (이걸 켜야 봇이 우리가 하는 말을 읽을 수 있어요.)
-
-#### 4. OpenClaw와 Discord 연결하기
-이제 아까 설치한 OpenClaw에게 디스코드 토큰을 알려줄 차례입니다.
-
-터미널에서 설정 명령어를 실행합니다.
+### 3.2 Discord 연결 설정
+설치가 끝났다면, 아까 발급받은 봇 토큰을 OpenClaw에게 알려줘야 합니다.
 
 ```bash
 openclaw configure
 ```
 
+설정 마법사가 실행되면 플랫폼으로 `discord`를 선택하고, 복사해둔 토큰을 입력합니다.
+
 ![OpenClaw Configuration](/images/openclaw-install/terminal-config.jpg)
 
-설정 마법사가 실행되면 다음과 같이 진행합니다.
-1.  **Platform**: `discord` 선택
-2.  **Token**: 아까 복사해둔 봇 토큰 입력
-3.  나머지 설정은 기본값으로 진행해도 무방합니다.
-
-설정이 끝났다면 OpenClaw를 실행해 봅시다!
-
-```bash
-openclaw gateway start
-```
-
-#### 5. 만남의 시간
-이제 Discord 서버에 봇을 초대하고 말을 걸어보세요.
+## 4. 결과 (Result) 📊
+설정을 마치고 `openclaw gateway start` 명령어로 에이전트를 깨웠습니다.
+그리고 Discord 서버에 들어가 말을 걸어보았습니다.
 
 > "안녕? 너 이제 내 말 들려?"
 
 ![OpenClaw Chat Verification](/images/openclaw-install/chat-verify.jpg)
 
-OpenClaw가 대답한다면 성공입니다! 이제 여러분도 **나만의 AI 비서**를 가지게 되었습니다.
-앞으로 이 친구와 함께 어떤 재미있는 일들을 할 수 있을지 기대되네요. 😎
+**성공입니다!** 🎉
+OpenClaw가 제 인사에 즉각 반응하며 대화를 시작했습니다. 이제 제 명령을 기다리는 든든한 비서가 생겼네요.
+
+## 5. 마치며 (Retrospective)
+생각보다 훨씬 간단하게 로컬 AI 에이전트를 구축할 수 있었습니다.
+이제 이 친구에게 **블로그 자동 배포**, **서버 상태 점검**, **뉴스 요약** 같은 다양한 업무를 맡겨볼 생각입니다.
+
+여러분도 **OpenClaw**와 함께 나만의 AI 파트너를 만들어보세요! 😎
