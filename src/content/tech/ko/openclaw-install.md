@@ -25,6 +25,8 @@ heroImage: ''
 brew install openclaw/tap/openclaw
 ```
 
+![OpenClaw Terminal Install](/images/openclaw-install/terminal-install.jpg)
+
 설치가 완료되었다면, 버전 확인을 통해 잘 설치되었는지 체크해 봅시다.
 
 ```bash
@@ -51,6 +53,8 @@ OpenClaw가 내 말을 들으려면 귀(채널)가 필요하겠죠? Discord 봇�
 openclaw configure
 ```
 
+![OpenClaw Configuration](/images/openclaw-install/terminal-config.jpg)
+
 설정 마법사가 실행되면 다음과 같이 진행합니다.
 1.  **Platform**: `discord` 선택
 2.  **Token**: 아까 복사해둔 봇 토큰 입력
@@ -66,6 +70,8 @@ openclaw gateway start
 이제 Discord 서버에 봇을 초대하고 말을 걸어보세요.
 
 > "안녕? 너 이제 내 말 들려?"
+
+![OpenClaw Chat Verification](/images/openclaw-install/chat-verify.jpg)
 
 OpenClaw가 대답한다면 성공입니다! 이제 여러분도 **나만의 AI 비서**를 가지게 되었습니다.
 앞으로 이 친구와 함께 어떤 재미있는 일들을 할 수 있을지 기대되네요. 😎
