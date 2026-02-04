@@ -6,6 +6,12 @@ const BASE_URL = import.meta.env.BASE_URL;
 const currentPath = Astro.url.pathname;
 const isEnglish = currentPath.startsWith('/en');
 const langPrefix = isEnglish ? '/en' : '';
+
+// Helper to construct URLs safely
+const getUrl = (path: string) => {
+    const base = BASE_URL === '/' ? '' : BASE_URL;
+    return `${base}${path}`;
+}
 ---
 <script is:inline define:vars={{ BASE_URL }}>
     function applyTheme(theme) {
@@ -47,7 +53,6 @@ const langPrefix = isEnglish ? '/en' : '';
         
         // Handle Base URL for language switching
         const getCleanPath = (path) => {
-            // Remove Base URL from path if present
             if (BASE_URL && BASE_URL !== '/' && path.startsWith(BASE_URL)) {
                 return path.substring(BASE_URL.length) || '/';
             }
@@ -75,14 +80,11 @@ const langPrefix = isEnglish ? '/en' : '';
                 let newPath = cleanPath;
 
                 if (targetLang === 'ko' && isEnglish) {
-                    // Switch to Korean: remove /en prefix
                     newPath = cleanPath.replace(/^\/en/, '') || '/';
                 } else if (targetLang === 'en' && !isEnglish) {
-                    // Switch to English: add /en prefix
                     newPath = `/en${cleanPath === '/' ? '' : cleanPath}`;
                 }
 
-                // Re-attach Base URL if needed. Ensure no double slashes.
                 const baseUrl = BASE_URL === '/' ? '' : BASE_URL;
                 const finalPath = baseUrl + newPath;
 
@@ -103,7 +105,6 @@ const langPrefix = isEnglish ? '/en' : '';
             themeDropdown?.classList.toggle('hidden');
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!themeDropdown?.classList.contains('hidden') && !themeBtn?.contains(e.target as Node)) {
                 themeDropdown?.classList.add('hidden');
@@ -119,9 +120,92 @@ const langPrefix = isEnglish ? '/en' : '';
         });
     }
 
-    // Initialize on first load
     initHeader();
-
-    // Re-initialize on View Transition
     document.addEventListener('astro:page-load', initHeader);
 </script>
+
+<header class="sticky top-0 z-50 w-full border-b backdrop-blur-md transition-colors duration-300" style="background-color: var(--bg-header); border-color: var(--border-main)">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center gap-3">
+      <a href={getUrl(`${langPrefix}/`)} class="flex items-center gap-2 group">
+        <div class="relative w-8 h-8 overflow-hidden rounded-full ring-2 ring-gray-100 dark:ring-gray-700 transition-transform group-hover:scale-110">
+            <img src={getUrl('/fire.png')} alt="Logo" class="w-full h-full object-cover" />
+        </div>
+        <span class="text-xl font-bold tracking-tight font-mono" style="color: var(--text-main)">
+            {SITE_TITLE}
+        </span>
+      </a>
+    </div>
+    
+    <nav class="flex items-center gap-6">
+       <a href={getUrl(`${langPrefix}/tech`)} class="text-sm font-medium hover:opacity-80 transition-opacity" style="color: var(--text-main)">
+          {isEnglish ? 'Tech' : '기술'}
+       </a>
+       <a href={getUrl(`${langPrefix}/life`)} class="text-sm font-medium hover:opacity-80 transition-opacity" style="color: var(--text-main)">
+          {isEnglish ? 'Life' : '일상'}
+       </a>
+       <a href={getUrl(`${langPrefix}/about`)} class="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white" style="color: var(--text-main)">About</a>
+
+       <div class="h-4 w-px bg-gray-300 mx-2" style="background-color: var(--border-main)"></div>
+       
+       <!-- Theme Picker -->
+       <div class="relative">
+            <button id="theme-btn" class="flex items-center gap-1 text-sm font-medium focus:outline-none opacity-80 hover:opacity-100 transition-opacity" style="color: var(--text-main)">
+                <span class="sr-only">Theme</span>
+                <div class="w-4 h-4 rounded-full border border-gray-300 shadow-sm" style="background-color: var(--bg-card)"></div>
+            </button>
+            <div id="theme-dropdown" class="absolute right-0 mt-2 w-32 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden transition-all" style="background-color: var(--bg-card); border: 1px solid var(--border-main);">
+                <div class="py-1">
+                    <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="pure" style="color: var(--text-main)">
+                        ⚪️ Pure
+                    </button>
+                    <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="paper" style="color: var(--text-main)">
+                        📜 Paper
+                    </button>
+                    <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="space" style="color: var(--text-main)">
+                        🌑 Space
+                    </button>
+                    <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="dark" style="color: var(--text-main)">
+                        ⚫️ Dark
+                    </button>
+                </div>
+            </div>
+       </div>
+
+       <!-- Language Picker -->
+       <div class="relative">
+            <button id="lang-btn" class="flex items-center gap-1 text-sm font-bold opacity-80 hover:opacity-100 transition-opacity focus:outline-none" style="color: var(--text-main)">
+                <span>{isEnglish ? 'EN' : 'KO'}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <div id="lang-dropdown" class="absolute right-0 mt-2 w-24 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden transition-all" style="background-color: var(--bg-card); border: 1px solid var(--border-main);">
+                <div class="py-1">
+                     <button class="lang-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity font-medium" data-lang="ko" style="color: var(--text-main)">
+                        🇰🇷 KO
+                    </button>
+                    <button class="lang-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity font-medium" data-lang="en" style="color: var(--text-main)">
+                        🇺🇸 EN
+                    </button>
+                </div>
+            </div>
+       </div>
+       
+       <!-- Search Trigger -->
+       <button id="search-btn" class="opacity-70 hover:opacity-100 focus:outline-none" aria-label="Search" style="color: var(--text-main)">
+           <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+       </button>
+
+       <!-- Github Link -->
+       <a href="https://github.com/zzado" target="_blank" rel="noreferrer" class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+          <span class="sr-only">GitHub</span>
+          <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+          </svg>
+       </a>
+    </nav>
+  </div>
+</header>
