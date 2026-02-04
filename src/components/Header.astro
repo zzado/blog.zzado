@@ -1,7 +1,8 @@
 ---
 import Search from './Search.astro';
-import { SITE_TITLE, BASE_URL } from '../consts';
+import { SITE_TITLE } from '../consts';
 
+const BASE_URL = import.meta.env.BASE_URL;
 const currentPath = Astro.url.pathname;
 const isEnglish = currentPath.startsWith('/en');
 const langPrefix = isEnglish ? '/en' : '';
@@ -46,6 +47,7 @@ const langPrefix = isEnglish ? '/en' : '';
         
         // Handle Base URL for language switching
         const getCleanPath = (path) => {
+            // Remove Base URL from path if present
             if (BASE_URL && BASE_URL !== '/' && path.startsWith(BASE_URL)) {
                 return path.substring(BASE_URL.length) || '/';
             }
@@ -80,8 +82,9 @@ const langPrefix = isEnglish ? '/en' : '';
                     newPath = `/en${cleanPath === '/' ? '' : cleanPath}`;
                 }
 
-                // Re-attach Base URL if needed
-                const finalPath = (BASE_URL === '/' ? '' : BASE_URL) + newPath;
+                // Re-attach Base URL if needed. Ensure no double slashes.
+                const baseUrl = BASE_URL === '/' ? '' : BASE_URL;
+                const finalPath = baseUrl + newPath;
 
                 if (finalPath !== currentPath) {
                     window.location.href = finalPath;
