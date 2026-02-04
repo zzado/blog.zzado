@@ -43,14 +43,53 @@ const getUrl = (path: string) => {
         applyTheme(localStorage.getItem('theme'));
 
         const searchBtn = document.getElementById('search-btn');
-        searchBtn?.addEventListener('click', () => {
-            window.dispatchEvent(new CustomEvent('open-search'));
-        });
+        const mobileSearchBtn = document.getElementById('mobile-search-btn');
+        
+        const openSearch = () => window.dispatchEvent(new CustomEvent('open-search'));
+        
+        searchBtn?.addEventListener('click', openSearch);
+        mobileSearchBtn?.addEventListener('click', openSearch);
 
         const langBtn = document.getElementById('lang-btn');
         const langDropdown = document.getElementById('lang-dropdown');
         const langOptions = document.querySelectorAll('.lang-option');
         
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        // Mobile Menu Toggle
+        menuBtn?.addEventListener('click', () => {
+            mobileMenu?.classList.toggle('hidden');
+        });
+
+        // Mobile Theme Toggle (Simple Cycle)
+        const mobileThemeBtn = document.getElementById('mobile-theme-btn');
+        mobileThemeBtn?.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'pure';
+            const themes = ['pure', 'paper', 'space', 'dark'];
+            const nextIndex = (themes.indexOf(currentTheme) + 1) % themes.length;
+            const nextTheme = themes[nextIndex];
+            applyTheme(nextTheme);
+        });
+
+        // Mobile Lang Toggle
+        const mobileLangBtn = document.getElementById('mobile-lang-btn');
+        mobileLangBtn?.addEventListener('click', () => {
+            const currentPath = window.location.pathname;
+            const cleanPath = getCleanPath(currentPath);
+            const isEnglish = cleanPath.startsWith('/en');
+            
+            let newPath = cleanPath;
+            if (isEnglish) {
+                newPath = cleanPath.replace(/^\/en/, '') || '/'; // To KO
+            } else {
+                newPath = `/en${cleanPath === '/' ? '' : cleanPath}`; // To EN
+            }
+            
+            const baseUrl = BASE_URL === '/' ? '' : BASE_URL;
+            window.location.href = baseUrl + newPath;
+        });
+
         // Handle Base URL for language switching
         const getCleanPath = (path) => {
             if (BASE_URL && BASE_URL !== '/' && path.startsWith(BASE_URL)) {
@@ -68,6 +107,13 @@ const getUrl = (path: string) => {
             if (!langDropdown?.classList.contains('hidden') && !langBtn?.contains(e.target as Node)) {
                 langDropdown?.classList.add('hidden');
             }
+            
+            // Close mobile menu when clicking outside
+            if (!mobileMenu?.classList.contains('hidden') && 
+                !mobileMenu?.contains(e.target as Node) && 
+                !menuBtn?.contains(e.target as Node)) {
+                mobileMenu?.classList.add('hidden');
+            }
         });
 
         langOptions.forEach(btn => {
@@ -80,11 +126,14 @@ const getUrl = (path: string) => {
                 let newPath = cleanPath;
 
                 if (targetLang === 'ko' && isEnglish) {
+                    // Switch to Korean: remove /en prefix
                     newPath = cleanPath.replace(/^\/en/, '') || '/';
                 } else if (targetLang === 'en' && !isEnglish) {
+                    // Switch to English: add /en prefix
                     newPath = `/en${cleanPath === '/' ? '' : cleanPath}`;
                 }
 
+                // Re-attach Base URL if needed. Ensure no double slashes.
                 const baseUrl = BASE_URL === '/' ? '' : BASE_URL;
                 const finalPath = baseUrl + newPath;
 
@@ -105,6 +154,7 @@ const getUrl = (path: string) => {
             themeDropdown?.classList.toggle('hidden');
         });
 
+        // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!themeDropdown?.classList.contains('hidden') && !themeBtn?.contains(e.target as Node)) {
                 themeDropdown?.classList.add('hidden');
@@ -120,7 +170,10 @@ const getUrl = (path: string) => {
         });
     }
 
+    // Initialize on first load
     initHeader();
+
+    // Re-initialize on View Transition
     document.addEventListener('astro:page-load', initHeader);
 </script>
 
@@ -137,7 +190,17 @@ const getUrl = (path: string) => {
       </a>
     </div>
     
-    <nav class="flex items-center gap-6">
+    <!-- Mobile Hamburger Menu Button -->
+    <div class="flex items-center md:hidden">
+        <button id="menu-btn" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--text-main)">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Desktop Navigation -->
+    <nav class="hidden md:flex items-center gap-6">
        <a href={getUrl(`${langPrefix}/tech`)} class="text-sm font-medium hover:opacity-80 transition-opacity" style="color: var(--text-main)">
           {isEnglish ? 'Tech' : '기술'}
        </a>
@@ -148,64 +211,106 @@ const getUrl = (path: string) => {
 
        <div class="h-4 w-px bg-gray-300 mx-2" style="background-color: var(--border-main)"></div>
        
-       <!-- Theme Picker -->
-       <div class="relative">
-            <button id="theme-btn" class="flex items-center gap-1 text-sm font-medium focus:outline-none opacity-80 hover:opacity-100 transition-opacity" style="color: var(--text-main)">
-                <span class="sr-only">Theme</span>
-                <div class="w-4 h-4 rounded-full border border-gray-300 shadow-sm" style="background-color: var(--bg-card)"></div>
-            </button>
-            <div id="theme-dropdown" class="absolute right-0 mt-2 w-32 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden transition-all" style="background-color: var(--bg-card); border: 1px solid var(--border-main);">
-                <div class="py-1">
-                    <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="pure" style="color: var(--text-main)">
-                        ⚪️ Pure
-                    </button>
-                    <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="paper" style="color: var(--text-main)">
-                        📜 Paper
-                    </button>
-                    <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="space" style="color: var(--text-main)">
-                        🌑 Space
-                    </button>
-                    <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="dark" style="color: var(--text-main)">
-                        ⚫️ Dark
-                    </button>
+       <!-- Theme & Lang Pickers (Desktop) -->
+       <div class="flex items-center gap-4">
+           <!-- Theme Picker -->
+           <div class="relative">
+                <button id="theme-btn" class="flex items-center gap-1 text-sm font-medium focus:outline-none opacity-80 hover:opacity-100 transition-opacity" style="color: var(--text-main)">
+                    <span class="sr-only">Theme</span>
+                    <div class="w-4 h-4 rounded-full border border-gray-300 shadow-sm" style="background-color: var(--bg-card)"></div>
+                </button>
+                <div id="theme-dropdown" class="absolute right-0 mt-2 w-32 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden transition-all z-50" style="background-color: var(--bg-card); border: 1px solid var(--border-main);">
+                    <div class="py-1">
+                        <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="pure" style="color: var(--text-main)">
+                            ⚪️ Pure
+                        </button>
+                        <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="paper" style="color: var(--text-main)">
+                            📜 Paper
+                        </button>
+                        <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="space" style="color: var(--text-main)">
+                            🌑 Space
+                        </button>
+                        <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="dark" style="color: var(--text-main)">
+                            ⚫️ Dark
+                        </button>
+                    </div>
                 </div>
-            </div>
-       </div>
+           </div>
 
-       <!-- Language Picker -->
-       <div class="relative">
-            <button id="lang-btn" class="flex items-center gap-1 text-sm font-bold opacity-80 hover:opacity-100 transition-opacity focus:outline-none" style="color: var(--text-main)">
-                <span>{isEnglish ? 'EN' : 'KO'}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+           <!-- Language Picker -->
+           <div class="relative">
+                <button id="lang-btn" class="flex items-center gap-1 text-sm font-bold opacity-80 hover:opacity-100 transition-opacity focus:outline-none" style="color: var(--text-main)">
+                    <span>{isEnglish ? 'EN' : 'KO'}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <div id="lang-dropdown" class="absolute right-0 mt-2 w-24 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden transition-all z-50" style="background-color: var(--bg-card); border: 1px solid var(--border-main);">
+                    <div class="py-1">
+                         <button class="lang-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity font-medium" data-lang="ko" style="color: var(--text-main)">
+                            🇰🇷 KO
+                        </button>
+                        <button class="lang-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity font-medium" data-lang="en" style="color: var(--text-main)">
+                            🇺🇸 EN
+                        </button>
+                    </div>
+                </div>
+           </div>
+           
+           <!-- Search Trigger -->
+           <button id="search-btn" class="opacity-70 hover:opacity-100 focus:outline-none" aria-label="Search" style="color: var(--text-main)">
+               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-            </button>
-            <div id="lang-dropdown" class="absolute right-0 mt-2 w-24 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden transition-all" style="background-color: var(--bg-card); border: 1px solid var(--border-main);">
-                <div class="py-1">
-                     <button class="lang-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity font-medium" data-lang="ko" style="color: var(--text-main)">
-                        🇰🇷 KO
-                    </button>
-                    <button class="lang-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity font-medium" data-lang="en" style="color: var(--text-main)">
-                        🇺🇸 EN
-                    </button>
-                </div>
-            </div>
-       </div>
-       
-       <!-- Search Trigger -->
-       <button id="search-btn" class="opacity-70 hover:opacity-100 focus:outline-none" aria-label="Search" style="color: var(--text-main)">
-           <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-       </button>
+           </button>
 
-       <!-- Github Link -->
-       <a href="https://github.com/zzado" target="_blank" rel="noreferrer" class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-          <span class="sr-only">GitHub</span>
-          <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
-          </svg>
-       </a>
+           <!-- Github Link -->
+           <a href="https://github.com/zzado" target="_blank" rel="noreferrer" class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              <span class="sr-only">GitHub</span>
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+              </svg>
+           </a>
+       </div>
     </nav>
+  </div>
+
+  <!-- Mobile Dropdown Menu -->
+  <div id="mobile-menu" class="hidden md:hidden border-t" style="border-color: var(--border-main); background-color: var(--bg-card)">
+      <div class="px-4 py-4 space-y-4">
+          <div class="flex flex-col gap-3">
+               <a href={getUrl(`${langPrefix}/tech`)} class="block text-base font-medium py-2 hover:opacity-80" style="color: var(--text-main)">
+                  {isEnglish ? 'Tech' : '기술'}
+               </a>
+               <a href={getUrl(`${langPrefix}/life`)} class="block text-base font-medium py-2 hover:opacity-80" style="color: var(--text-main)">
+                  {isEnglish ? 'Life' : '일상'}
+               </a>
+               <a href={getUrl(`${langPrefix}/about`)} class="block text-base font-medium py-2 hover:opacity-80" style="color: var(--text-main)">About</a>
+          </div>
+          
+          <div class="h-px w-full my-2 bg-gray-200 dark:bg-gray-700"></div>
+
+          <div class="flex items-center justify-between">
+              <span class="text-sm font-medium" style="color: var(--text-muted)">Settings</span>
+              <div class="flex gap-4">
+                  <!-- Mobile Theme Toggle (Simple Cycle) -->
+                  <button id="mobile-theme-btn" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Toggle Theme">
+                      <div class="w-5 h-5 rounded-full border border-gray-300 shadow-sm" style="background-color: var(--bg-main)"></div>
+                  </button>
+                  
+                  <!-- Mobile Lang Toggle -->
+                  <button id="mobile-lang-btn" class="text-sm font-bold p-2 hover:opacity-80" style="color: var(--text-main)">
+                      {isEnglish ? 'EN' : 'KO'}
+                  </button>
+
+                  <!-- Mobile Search -->
+                  <button id="mobile-search-btn" class="p-2 hover:opacity-80" aria-label="Search" style="color: var(--text-main)">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                  </button>
+              </div>
+          </div>
+      </div>
   </div>
 </header>
