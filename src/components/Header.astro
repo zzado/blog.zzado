@@ -57,29 +57,17 @@ const getUrl = (path: string) => {
        
        <!-- Theme & Lang Pickers (Desktop) -->
        <div class="flex items-center gap-4">
-           <!-- Theme Picker -->
-           <div class="relative group/theme">
-                <button id="theme-btn" class="flex items-center gap-1 text-sm font-medium focus:outline-none opacity-80 hover:opacity-100 transition-opacity" style="color: var(--text-main)">
-                    <span class="sr-only">Theme</span>
-                    <div class="w-4 h-4 rounded-full border border-gray-300 shadow-sm" style="background-color: var(--bg-card)"></div>
-                </button>
-                <div id="theme-dropdown" class="hidden absolute right-0 mt-2 w-32 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transition-all z-50 group-focus-within/theme:block" style="background-color: var(--bg-card); border: 1px solid var(--border-main);">
-                    <div class="py-1">
-                        <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="pure" style="color: var(--text-main)">
-                            ⚪️ Pure
-                        </button>
-                        <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="paper" style="color: var(--text-main)">
-                            📜 Paper
-                        </button>
-                        <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="space" style="color: var(--text-main)">
-                            🌑 Space
-                        </button>
-                        <button class="theme-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity" data-value="dark" style="color: var(--text-main)">
-                            ⚫️ Dark
-                        </button>
-                    </div>
-                </div>
-           </div>
+           <!-- Theme Toggle (Sun/Moon) -->
+           <button id="theme-btn" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Theme" style="color: var(--text-main)">
+               <!-- Sun Icon (Show in Dark Mode) -->
+               <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+               </svg>
+               <!-- Moon Icon (Show in Light Mode) -->
+               <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+               </svg>
+           </button>
 
            <!-- Language Toggle Button (Simple) -->
            <button id="lang-btn" class="flex items-center gap-1 text-sm font-bold opacity-80 hover:opacity-100 transition-opacity focus:outline-none px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" style="color: var(--text-main)">
@@ -151,7 +139,7 @@ const getUrl = (path: string) => {
         }
         
         document.documentElement.setAttribute('data-theme', theme);
-        if (theme === 'space' || theme === 'dark') {
+        if (theme === 'dark') {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
@@ -165,24 +153,30 @@ const getUrl = (path: string) => {
     function setupHeader() {
         // Elements
         const searchBtn = document.getElementById('search-btn');
-        const mobileSearchBtn = document.getElementById('mobile-search-btn');
-        const mobileSearchBtnTop = document.getElementById('mobile-search-btn-top');
+        const mobileSearchBtn = document.getElementById('mobile-search-btn-top');
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
+        const themeBtn = document.getElementById('theme-btn');
         const mobileThemeBtn = document.getElementById('mobile-theme-btn');
-        const mobileLangBtn = document.getElementById('mobile-lang-btn');
         const langBtn = document.getElementById('lang-btn');
-        const themeOptions = document.querySelectorAll('.theme-option');
+        const mobileLangBtn = document.getElementById('mobile-lang-btn');
         
         // --- Helper: Apply Theme ---
         const applyTheme = (theme) => {
             document.documentElement.setAttribute('data-theme', theme);
-            if (theme === 'space' || theme === 'dark') {
+            if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');
             }
             localStorage.setItem('theme', theme);
+        };
+
+        // --- Helper: Toggle Theme ---
+        const toggleTheme = () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'paper';
+            const newTheme = currentTheme === 'dark' ? 'paper' : 'dark';
+            applyTheme(newTheme);
         };
 
         // --- Helper: Path Cleaning ---
@@ -197,19 +191,16 @@ const getUrl = (path: string) => {
         const toggleLanguage = () => {
             const currentPath = window.location.pathname;
             const cleanPath = getCleanPath(currentPath);
-            // Handle /en, /en/, /en/...
             const isEnglish = cleanPath === '/en' || cleanPath.startsWith('/en/');
             
             let newPath = cleanPath;
             if (isEnglish) {
-                // Switch to KO: Remove /en prefix
                 if (cleanPath === '/en') {
                     newPath = '/';
                 } else {
                     newPath = cleanPath.replace(/^\/en\//, '/');
                 }
             } else {
-                // Switch to EN: Add /en prefix
                 newPath = `/en${cleanPath === '/' ? '' : cleanPath}`;
             }
             
@@ -223,7 +214,6 @@ const getUrl = (path: string) => {
         const openSearch = () => window.dispatchEvent(new CustomEvent('open-search'));
         searchBtn?.addEventListener('click', openSearch);
         mobileSearchBtn?.addEventListener('click', openSearch);
-        mobileSearchBtnTop?.addEventListener('click', openSearch);
 
         // Mobile Menu Toggle
         menuBtn?.addEventListener('click', (e) => {
@@ -240,25 +230,13 @@ const getUrl = (path: string) => {
             }
         });
 
-        // Theme Toggle (Cycle)
-        mobileThemeBtn?.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'pure';
-            const themes = ['pure', 'paper', 'space', 'dark'];
-            const nextIndex = (themes.indexOf(currentTheme) + 1) % themes.length;
-            applyTheme(themes[nextIndex]);
-        });
+        // Theme Toggle (Single Button)
+        themeBtn?.addEventListener('click', toggleTheme);
+        mobileThemeBtn?.addEventListener('click', toggleTheme);
 
         // Lang Toggle (Desktop & Mobile)
         langBtn?.addEventListener('click', toggleLanguage);
         mobileLangBtn?.addEventListener('click', toggleLanguage);
-
-        // Desktop Theme Dropdown Options
-        themeOptions.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const value = e.currentTarget.getAttribute('data-value');
-                applyTheme(value);
-            });
-        });
     }
 
     // Run on initial load

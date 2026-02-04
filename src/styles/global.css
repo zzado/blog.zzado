@@ -19,16 +19,6 @@
 
   /* Force light theme defaults if data-theme is missing or empty */
   html:not([data-theme]),
-  html[data-theme='pure'] {
-    --bg-main: #f9fafb;
-    --text-main: #111827;
-    --bg-card: #ffffff;
-    --border-main: #e5e7eb;
-    --bg-header: rgba(255, 255, 255, 0.8);
-    --bg-hover: #f3f4f6;
-    --text-muted: #6b7280;
-  }
-
   html[data-theme='paper'] {
     --bg-main: #fcfbf9;
     --text-main: #44403c;
@@ -37,16 +27,6 @@
     --bg-header: rgba(252, 251, 249, 0.85);
     --bg-hover: #f5f2eb;
     --text-muted: #78716c;
-  }
-
-  html[data-theme='space'] {
-    --bg-main: #0f172a;
-    --text-main: #ffffff;
-    --bg-card: #1e293b;
-    --border-main: #334155;
-    --bg-header: rgba(15, 23, 42, 0.85);
-    --bg-hover: #334155;
-    --text-muted: #cbd5e1;
   }
 
   html[data-theme='dark'] {
