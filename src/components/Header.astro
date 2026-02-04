@@ -4,7 +4,7 @@ import { SITE_TITLE } from '../consts';
 
 const BASE_URL = import.meta.env.BASE_URL;
 const currentPath = Astro.url.pathname;
-const isEnglish = currentPath.startsWith('/en');
+const isEnglish = currentPath.startsWith('/en') || currentPath.includes('/en/');
 const langPrefix = isEnglish ? '/en' : '';
 
 // Helper to construct URLs safely
@@ -28,7 +28,14 @@ const getUrl = (path: string) => {
     </div>
     
     <!-- Mobile Hamburger Menu Button -->
-    <div class="flex items-center md:hidden">
+    <div class="flex items-center md:hidden gap-4">
+        <!-- Mobile Search (Always Visible) -->
+        <button id="mobile-search-btn-top" class="p-2 hover:opacity-80" aria-label="Search" style="color: var(--text-main)">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </button>
+
         <button id="menu-btn" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Menu">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--text-main)">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -74,25 +81,10 @@ const getUrl = (path: string) => {
                 </div>
            </div>
 
-           <!-- Language Picker -->
-           <div class="relative group/lang">
-                <button id="lang-btn" class="flex items-center gap-1 text-sm font-bold opacity-80 hover:opacity-100 transition-opacity focus:outline-none" style="color: var(--text-main)">
-                    <span>{isEnglish ? 'EN' : 'KO'}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-                <div id="lang-dropdown" class="hidden absolute right-0 mt-2 w-24 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transition-all z-50 group-focus-within/lang:block" style="background-color: var(--bg-card); border: 1px solid var(--border-main);">
-                    <div class="py-1">
-                         <button class="lang-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity font-medium" data-lang="ko" style="color: var(--text-main)">
-                            🇰🇷 KO
-                        </button>
-                        <button class="lang-option w-full text-left px-4 py-2 text-sm hover:opacity-80 transition-opacity font-medium" data-lang="en" style="color: var(--text-main)">
-                            🇺🇸 EN
-                        </button>
-                    </div>
-                </div>
-           </div>
+           <!-- Language Toggle Button (Simple) -->
+           <button id="lang-btn" class="flex items-center gap-1 text-sm font-bold opacity-80 hover:opacity-100 transition-opacity focus:outline-none px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" style="color: var(--text-main)">
+               {isEnglish ? '🇺🇸 EN' : '🇰🇷 KO'}
+           </button>
            
            <!-- Search Trigger -->
            <button id="search-btn" class="opacity-70 hover:opacity-100 focus:outline-none" aria-label="Search" style="color: var(--text-main)">
@@ -137,14 +129,7 @@ const getUrl = (path: string) => {
                   
                   <!-- Mobile Lang Toggle -->
                   <button id="mobile-lang-btn" class="text-sm font-bold p-2 hover:opacity-80" style="color: var(--text-main)">
-                      {isEnglish ? 'EN' : 'KO'}
-                  </button>
-
-                  <!-- Mobile Search -->
-                  <button id="mobile-search-btn" class="p-2 hover:opacity-80" aria-label="Search" style="color: var(--text-main)">
-                       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+                      {isEnglish ? '🇺🇸 EN' : '🇰🇷 KO'}
                   </button>
               </div>
           </div>
@@ -181,12 +166,13 @@ const getUrl = (path: string) => {
         // Elements
         const searchBtn = document.getElementById('search-btn');
         const mobileSearchBtn = document.getElementById('mobile-search-btn');
+        const mobileSearchBtnTop = document.getElementById('mobile-search-btn-top');
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const mobileThemeBtn = document.getElementById('mobile-theme-btn');
         const mobileLangBtn = document.getElementById('mobile-lang-btn');
+        const langBtn = document.getElementById('lang-btn');
         const themeOptions = document.querySelectorAll('.theme-option');
-        const langOptions = document.querySelectorAll('.lang-option');
         
         // --- Helper: Apply Theme ---
         const applyTheme = (theme) => {
@@ -207,12 +193,37 @@ const getUrl = (path: string) => {
             return path;
         };
 
+        // --- Helper: Language Toggle Logic ---
+        const toggleLanguage = () => {
+            const currentPath = window.location.pathname;
+            const cleanPath = getCleanPath(currentPath);
+            // Handle /en, /en/, /en/...
+            const isEnglish = cleanPath === '/en' || cleanPath.startsWith('/en/');
+            
+            let newPath = cleanPath;
+            if (isEnglish) {
+                // Switch to KO: Remove /en prefix
+                if (cleanPath === '/en') {
+                    newPath = '/';
+                } else {
+                    newPath = cleanPath.replace(/^\/en\//, '/');
+                }
+            } else {
+                // Switch to EN: Add /en prefix
+                newPath = `/en${cleanPath === '/' ? '' : cleanPath}`;
+            }
+            
+            const baseUrl = BASE_URL === '/' ? '' : BASE_URL;
+            window.location.href = baseUrl + newPath;
+        };
+
         // --- Event Listeners ---
 
         // Search
         const openSearch = () => window.dispatchEvent(new CustomEvent('open-search'));
         searchBtn?.addEventListener('click', openSearch);
         mobileSearchBtn?.addEventListener('click', openSearch);
+        mobileSearchBtnTop?.addEventListener('click', openSearch);
 
         // Mobile Menu Toggle
         menuBtn?.addEventListener('click', (e) => {
@@ -229,7 +240,7 @@ const getUrl = (path: string) => {
             }
         });
 
-        // Mobile Theme Toggle (Cycle)
+        // Theme Toggle (Cycle)
         mobileThemeBtn?.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'pure';
             const themes = ['pure', 'paper', 'space', 'dark'];
@@ -237,50 +248,15 @@ const getUrl = (path: string) => {
             applyTheme(themes[nextIndex]);
         });
 
-        // Mobile Lang Toggle
-        mobileLangBtn?.addEventListener('click', () => {
-            const currentPath = window.location.pathname;
-            const cleanPath = getCleanPath(currentPath);
-            const isEnglish = cleanPath.startsWith('/en');
-            
-            let newPath = cleanPath;
-            if (isEnglish) {
-                newPath = cleanPath.replace(/^\/en/, '') || '/';
-            } else {
-                newPath = `/en${cleanPath === '/' ? '' : cleanPath}`;
-            }
-            
-            const baseUrl = BASE_URL === '/' ? '' : BASE_URL;
-            window.location.href = baseUrl + newPath;
-        });
+        // Lang Toggle (Desktop & Mobile)
+        langBtn?.addEventListener('click', toggleLanguage);
+        mobileLangBtn?.addEventListener('click', toggleLanguage);
 
         // Desktop Theme Dropdown Options
         themeOptions.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const value = e.currentTarget.getAttribute('data-value');
                 applyTheme(value);
-            });
-        });
-
-        // Desktop Lang Dropdown Options
-        langOptions.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const targetLang = e.currentTarget.getAttribute('data-lang');
-                const currentPath = window.location.pathname;
-                const cleanPath = getCleanPath(currentPath);
-                const isEnglish = cleanPath.startsWith('/en');
-                
-                let newPath = cleanPath;
-                if (targetLang === 'ko' && isEnglish) {
-                    newPath = cleanPath.replace(/^\/en/, '') || '/';
-                } else if (targetLang === 'en' && !isEnglish) {
-                    newPath = `/en${cleanPath === '/' ? '' : cleanPath}`;
-                }
-
-                const baseUrl = BASE_URL === '/' ? '' : BASE_URL;
-                if ((baseUrl + newPath) !== currentPath) {
-                    window.location.href = baseUrl + newPath;
-                }
             });
         });
     }
