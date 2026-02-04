@@ -7,7 +7,8 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://example.com',
+  site: 'https://zzado.github.io',
+  base: '/blog.zzado',
   vite: {
     plugins: [tailwindcss()]
   },
