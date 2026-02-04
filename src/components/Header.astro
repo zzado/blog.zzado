@@ -114,80 +114,87 @@ const langPrefix = isEnglish ? '/en' : '';
 <Search />
 
 <script>
-    const searchBtn = document.getElementById('search-btn');
-    searchBtn?.addEventListener('click', () => {
-        window.dispatchEvent(new CustomEvent('open-search'));
-    });
-
-    const langBtn = document.getElementById('lang-btn');
-    const langDropdown = document.getElementById('lang-dropdown');
-    const langOptions = document.querySelectorAll('.lang-option');
-    const currentPath = window.location.pathname;
-    const isEnglish = currentPath.startsWith('/en');
-
-    langBtn?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        langDropdown?.classList.toggle('hidden');
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!langDropdown?.classList.contains('hidden') && !langBtn?.contains(e.target as Node)) {
-            langDropdown?.classList.add('hidden');
-        }
-    });
-
-    langOptions.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const targetLang = e.currentTarget.getAttribute('data-lang');
-            let newPath = currentPath;
-
-            if (targetLang === 'ko' && isEnglish) {
-                // Switch to Korean: remove /en prefix
-                newPath = currentPath.replace(/^\/en/, '') || '/';
-            } else if (targetLang === 'en' && !isEnglish) {
-                // Switch to English: add /en prefix
-                newPath = `/en${currentPath === '/' ? '' : currentPath}`;
-            }
-
-            if (newPath !== currentPath) {
-                window.location.href = newPath;
-            }
-            langDropdown?.classList.add('hidden');
+    function initHeader() {
+        const searchBtn = document.getElementById('search-btn');
+        searchBtn?.addEventListener('click', () => {
+            window.dispatchEvent(new CustomEvent('open-search'));
         });
-    });
 
-    // Theme Logic
-    // Theme Logic
-    const themeBtn = document.getElementById('theme-btn');
-    const themeDropdown = document.getElementById('theme-dropdown');
-    const themeOptions = document.querySelectorAll('.theme-option');
+        const langBtn = document.getElementById('lang-btn');
+        const langDropdown = document.getElementById('lang-dropdown');
+        const langOptions = document.querySelectorAll('.lang-option');
+        const currentPath = window.location.pathname;
+        const isEnglish = currentPath.startsWith('/en');
 
-    themeBtn?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        themeDropdown?.classList.toggle('hidden');
-    });
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!themeDropdown?.classList.contains('hidden') && !themeBtn?.contains(e.target as Node)) {
-            themeDropdown?.classList.add('hidden');
-        }
-    });
-
-    themeOptions.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const value = e.currentTarget.getAttribute('data-value'); // Use currentTarget
-            document.documentElement.setAttribute('data-theme', value);
-            localStorage.setItem('theme', value);
-            
-            // Toggle Dark Mode class for Tailwind logic (prose-invert etc)
-            if (value === 'space' || value === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-
-            themeDropdown?.classList.add('hidden'); // Close on selection
+        langBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            langDropdown?.classList.toggle('hidden');
         });
-    });
+
+        document.addEventListener('click', (e) => {
+            if (!langDropdown?.classList.contains('hidden') && !langBtn?.contains(e.target as Node)) {
+                langDropdown?.classList.add('hidden');
+            }
+        });
+
+        langOptions.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetLang = e.currentTarget.getAttribute('data-lang');
+                let newPath = currentPath;
+
+                if (targetLang === 'ko' && isEnglish) {
+                    // Switch to Korean: remove /en prefix
+                    newPath = currentPath.replace(/^\/en/, '') || '/';
+                } else if (targetLang === 'en' && !isEnglish) {
+                    // Switch to English: add /en prefix
+                    newPath = `/en${currentPath === '/' ? '' : currentPath}`;
+                }
+
+                if (newPath !== currentPath) {
+                    window.location.href = newPath;
+                }
+                langDropdown?.classList.add('hidden');
+            });
+        });
+
+        // Theme Logic
+        const themeBtn = document.getElementById('theme-btn');
+        const themeDropdown = document.getElementById('theme-dropdown');
+        const themeOptions = document.querySelectorAll('.theme-option');
+
+        themeBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            themeDropdown?.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!themeDropdown?.classList.contains('hidden') && !themeBtn?.contains(e.target as Node)) {
+                themeDropdown?.classList.add('hidden');
+            }
+        });
+
+        themeOptions.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const value = e.currentTarget.getAttribute('data-value'); // Use currentTarget
+                document.documentElement.setAttribute('data-theme', value);
+                localStorage.setItem('theme', value);
+                
+                // Toggle Dark Mode class for Tailwind logic (prose-invert etc)
+                if (value === 'space' || value === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+
+                themeDropdown?.classList.add('hidden'); // Close on selection
+            });
+        });
+    }
+
+    // Initialize on first load
+    initHeader();
+
+    // Re-initialize on View Transition
+    document.addEventListener('astro:page-load', initHeader);
 </script>
