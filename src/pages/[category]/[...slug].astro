@@ -30,8 +30,8 @@ const { Content, headings } = await post.render();
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-    <div class="relative lg:flex lg:gap-10 lg:items-start">
-        <article class="prose prose-lg dark:prose-invert min-w-0 flex-1 mx-auto lg:mx-0">
+    <div class="relative flex flex-col lg:flex-row lg:gap-10 lg:items-start">
+        <article class="prose prose-lg dark:prose-invert min-w-0 w-full flex-1 max-w-none">
             <div class="mb-8 border-b border-gray-200 pb-8 dark:border-gray-800">
                 <div class="mb-4">
                      <a href={`${BASE_URL}/${post.collection}`} class="text-sm font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400 hover:underline">
