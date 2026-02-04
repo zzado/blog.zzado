@@ -29,7 +29,7 @@ OpenClaw가 내 말을 들으려면 소통 창구가 필요합니다. 가장 접
 brew install openclaw/tap/openclaw
 ```
 
-![OpenClaw Terminal Install](/images/openclaw-install/terminal-install.jpg)
+![OpenClaw Terminal Install](/blog.zzado/images/openclaw-install/terminal-install.jpg)
 
 ### 3.2 Discord 연결 설정
 설치가 끝났다면, 아까 발급받은 봇 토큰을 OpenClaw에게 알려줘야 합니다.
@@ -40,7 +40,7 @@ openclaw configure
 
 설정 마법사가 실행되면 플랫폼으로 `discord`를 선택하고, 복사해둔 토큰을 입력합니다.
 
-![OpenClaw Configuration](/images/openclaw-install/terminal-config.jpg)
+![OpenClaw Configuration](/blog.zzado/images/openclaw-install/terminal-config.jpg)
 
 ## 4. 결과 (Result) 📊
 설정을 마치고 `openclaw gateway start` 명령어로 에이전트를 깨웠습니다.
@@ -48,7 +48,7 @@ openclaw configure
 
 > "안녕? 너 이제 내 말 들려?"
 
-![OpenClaw Chat Verification](/images/openclaw-install/chat-verify.jpg)
+![OpenClaw Chat Verification](/blog.zzado/images/openclaw-install/chat-verify.jpg)
 
 **성공입니다!** 🎉
 OpenClaw가 제 인사에 즉각 반응하며 대화를 시작했습니다. 이제 제 명령을 기다리는 든든한 비서가 생겼네요.

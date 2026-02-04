@@ -3,7 +3,7 @@ title: '여의도 직장인의 해장 성지, 여의도따로국밥 방문기'
 description: '뜨끈한 국물과 시원한 김치가 일품인 여의도따로국밥. 점심시간 웨이팅 필수인 이유를 직접 확인하고 왔습니다.'
 pubDate: 2026-02-04
 tags: ['food', 'yeouido', 'korean-food', 'gukbap']
-heroImage: '/images/life/yeouido-gukbap.jpg'
+heroImage: '/blog.zzado/images/life/yeouido-gukbap.jpg'
 ---
 
 ## 1. 방문 계기 (Intro)
@@ -22,7 +22,7 @@ heroImage: '/images/life/yeouido-gukbap.jpg'
 ## 3. 맛 평가 (Review) 😋
 
 ### 3.1 비주얼 & 국물
-![여의도따로국밥](/images/life/yeouido-gukbap.jpg)
+![여의도따로국밥](/blog.zzado/images/life/yeouido-gukbap.jpg)
 
 주문하고 얼마 지나지 않아 김이 모락모락 나는 뚝배기가 등장했습니다.
 콩나물이 듬뿍 들어가 국물은 맑고 시원합니다. 고기 육수의 묵직함보다는 **채수의 깔끔함과 개운함**이 강조된 맛입니다.
