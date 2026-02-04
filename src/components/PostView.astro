@@ -11,24 +11,23 @@ const { posts } = Astro.props;
 ---
 
 <div class="post-view-container">
-    <div class="flex justify-end mb-6">
-        <div class="flex p-1 rounded-lg" style="background-color: var(--bg-hover)">
-             <button id="view-list" class="view-toggle-btn p-1.5 rounded-md transition-all hover:opacity-100" style="color: var(--text-muted)" aria-label="List View">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            </button>
-            <button id="view-card" class="view-toggle-btn p-1.5 rounded-md transition-all hover:opacity-100" style="color: var(--text-muted)" aria-label="Card View">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-            </button>
-        </div>
+    <!-- Desktop View Toggle (Hidden on Mobile) -->
+    <div class="hidden md:flex justify-end mb-6">
+        <button id="view-toggle-btn" class="p-2 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Toggle View" style="color: var(--text-muted)">
+            <!-- List Icon (Default) -->
+            <svg id="icon-list" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <!-- Card Icon -->
+            <svg id="icon-card" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+        </button>
     </div>
 
     {posts.length > 0 ? (
         <>
-            <div id="list-view" class="view-content flex flex-col">
+            <div id="list-view" class="view-content flex flex-col hidden">
                 {posts.map((post) => (
                     <PostListItem post={post} />
                 ))}
@@ -52,37 +51,64 @@ const { posts } = Astro.props;
 </div>
 
 <script>
-    const listBtn = document.getElementById('view-list');
-    const cardBtn = document.getElementById('view-card');
-    const listView = document.getElementById('list-view');
-    const cardView = document.getElementById('card-view');
-    
-    const activeClass = ['view-toggle-active'];
+    function initPostView() {
+        const toggleBtn = document.getElementById('view-toggle-btn');
+        const listView = document.getElementById('list-view');
+        const cardView = document.getElementById('card-view');
+        const iconList = document.getElementById('icon-list');
+        const iconCard = document.getElementById('icon-card');
 
-    function setView(mode: 'list' | 'card') {
-        localStorage.setItem('blog-view-mode', mode);
-        
-        if (mode === 'list') {
-            listView?.classList.remove('hidden');
-            cardView?.classList.add('hidden');
-            
-            listBtn?.classList.add(...activeClass);
-            cardBtn?.classList.remove(...activeClass);
-        } else {
-            listView?.classList.add('hidden');
-            cardView?.classList.remove('hidden');
+        // Check if we are on mobile (using matchMedia for robustness)
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
-            cardBtn?.classList.add(...activeClass);
-            listBtn?.classList.remove(...activeClass);
+        function renderView(mode) {
+            // Save preference only if not mobile
+            if (!isMobile) {
+                localStorage.setItem('blog-view-mode', mode);
+            }
+
+            if (mode === 'list') {
+                listView?.classList.remove('hidden');
+                cardView?.classList.add('hidden');
+                
+                // Show "Card" icon because clicking it will switch TO card view
+                iconCard?.classList.remove('hidden');
+                iconList?.classList.add('hidden');
+                toggleBtn?.setAttribute('aria-label', 'Switch to Card View');
+            } else {
+                listView?.classList.add('hidden');
+                cardView?.classList.remove('hidden');
+
+                // Show "List" icon because clicking it will switch TO list view
+                iconList?.classList.remove('hidden');
+                iconCard?.classList.add('hidden');
+                toggleBtn?.setAttribute('aria-label', 'Switch to List View');
+            }
         }
+
+        // Determine initial mode
+        // Mobile -> Force List
+        // Desktop -> Load from storage or default to List
+        let currentMode = isMobile ? 'list' : (localStorage.getItem('blog-view-mode') || 'list');
+        renderView(currentMode);
+
+        toggleBtn?.addEventListener('click', () => {
+            currentMode = currentMode === 'list' ? 'card' : 'list';
+            renderView(currentMode);
+        });
+        
+        // Listen for screen resize to enforce mobile rule
+        window.matchMedia('(max-width: 768px)').addEventListener('change', (e) => {
+            if (e.matches) {
+                renderView('list'); // Force list on mobile
+            } else {
+                // Restore user preference on desktop
+                const savedMode = localStorage.getItem('blog-view-mode') || 'list';
+                renderView(savedMode);
+            }
+        });
     }
 
-    // Initialize
-    const savedMode = localStorage.getItem('blog-view-mode') || 'list';
-    setView(savedMode as 'list' | 'card');
-
-    listBtn?.addEventListener('click', () => setView('list'));
-    cardBtn?.addEventListener('click', () => setView('card'));
-    
-    // View Transitions/Persist on navigation (astro view transitions optional, but script runs on page load)
+    initPostView();
+    document.addEventListener('astro:page-load', initPostView);
 </script>
