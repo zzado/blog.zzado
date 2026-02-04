@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { BASE_URL } from '../consts';
 
 interface Props {
 	post: CollectionEntry<'tech'> | CollectionEntry<'life'>;
@@ -16,8 +17,8 @@ const formattedDate = post.data.pubDate.toLocaleDateString('en-us', {
 const isEnglish = post.slug.startsWith('en/');
 const slugClean = post.slug.replace(/^(ko|en)\//, '');
 const postUrl = isEnglish 
-    ? `/en/${post.collection}/${slugClean}/` 
-    : `/${post.collection}/${slugClean}/`;
+    ? `${BASE_URL}/en/${post.collection}/${slugClean}/` 
+    : `${BASE_URL}/${post.collection}/${slugClean}/`;
 ---
 
 <article class="flex flex-col h-full overflow-hidden rounded-md shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg border" style="background-color: var(--bg-card); border-color: var(--border-main)">

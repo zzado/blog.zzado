@@ -1,12 +1,12 @@
 ---
 import Search from './Search.astro';
-import { SITE_TITLE } from '../consts';
+import { SITE_TITLE, BASE_URL } from '../consts';
 
 const currentPath = Astro.url.pathname;
 const isEnglish = currentPath.startsWith('/en');
 const langPrefix = isEnglish ? '/en' : '';
 ---
-<script is:inline>
+<script is:inline define:vars={{ BASE_URL }}>
     // Theme initialization
     let theme = 'paper'; // Default light theme
     
@@ -27,9 +27,9 @@ const langPrefix = isEnglish ? '/en' : '';
 <header class="sticky top-0 z-50 w-full border-b backdrop-blur-md transition-colors duration-300" style="background-color: var(--bg-header); border-color: var(--border-main)">
   <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
     <div class="flex items-center gap-3">
-      <a href={`${langPrefix}/`} class="flex items-center gap-2 group">
+      <a href={`${BASE_URL}${langPrefix}/`} class="flex items-center gap-2 group">
         <div class="relative w-8 h-8 overflow-hidden rounded-full ring-2 ring-gray-100 dark:ring-gray-700 transition-transform group-hover:scale-110">
-            <img src="/blog.zzado/fire.png" alt="Logo" class="w-full h-full object-cover" />
+            <img src={`${BASE_URL}/fire.png`} alt="Logo" class="w-full h-full object-cover" />
         </div>
         <span class="text-xl font-bold tracking-tight font-mono" style="color: var(--text-main)">
             {SITE_TITLE}
@@ -39,13 +39,13 @@ const langPrefix = isEnglish ? '/en' : '';
     
     <nav class="flex items-center gap-6">
        <!-- Navigation Links -->
-       <a href={`${langPrefix}/tech`} class="text-sm font-medium hover:opacity-80 transition-opacity" style="color: var(--text-main)">
+       <a href={`${BASE_URL}${langPrefix}/tech`} class="text-sm font-medium hover:opacity-80 transition-opacity" style="color: var(--text-main)">
           {isEnglish ? 'Tech' : '기술'}
        </a>
-       <a href={`${langPrefix}/life`} class="text-sm font-medium hover:opacity-80 transition-opacity" style="color: var(--text-main)">
+       <a href={`${BASE_URL}${langPrefix}/life`} class="text-sm font-medium hover:opacity-80 transition-opacity" style="color: var(--text-main)">
           {isEnglish ? 'Life' : '일상'}
        </a>
-       <a href={`${langPrefix}/about`} class="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white" style="color: var(--text-main)">About</a>
+       <a href={`${BASE_URL}${langPrefix}/about`} class="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white" style="color: var(--text-main)">About</a>
 
        <div class="h-4 w-px bg-gray-300 mx-2" style="background-color: var(--border-main)"></div>
        

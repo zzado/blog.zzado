@@ -3,3 +3,4 @@
 
 export const SITE_TITLE = 'blog.zzado.kr';
 export const SITE_DESCRIPTION = 'Welcome to my website!';
+export const BASE_URL = '/blog.zzado';
